@@ -18,7 +18,9 @@ void DiskManager::write_page(int fd, page_id_t page_no, const char *offset, int 
     // 1.lseek()定位到文件头，通过(fd,page_no)可以定位指定页面及其在磁盘文件中的偏移量
     // 2.调用write()函数
     // 注意处理异常
-
+    off_t offs = lseek(fd, page_no * PAGE_SIZE, SEEK_SET);
+    std::cout << "[DiskManager] write_page: offset find and seek to" << offs << std::endl;
+    write(fd, offset, num_bytes);
 }
 
 /**
@@ -29,6 +31,14 @@ void DiskManager::read_page(int fd, page_id_t page_no, char *offset, int num_byt
     // 1.lseek()定位到文件头，通过(fd,page_no)可以定位指定页面及其在磁盘文件中的偏移量
     // 2.调用read()函数
     // 注意处理异常
+    off_t offs = lseek(fd, page_no * PAGE_SIZE, SEEK_SET);
+    std::cout << "[DiskManager] read_page: offset find and seek to" << offs << std::endl;
+    ssize_t res = read(fd, offset, num_bytes);
+    // 0 is EOF, -1 is error
+    if (res == -1) {
+        std::cout << "[DiskManager] read_page: read error" << std::endl;
+        throw UnixError();
+    }
 
 }
 
@@ -39,8 +49,7 @@ void DiskManager::read_page(int fd, page_id_t page_no, char *offset, int num_byt
 page_id_t DiskManager::AllocatePage(int fd) {
     // Todo:
     // 简单的自增分配策略，指定文件的页面编号加1
-
-    return -1;
+    return ++fd2pageno_[fd];
 }
 
 /**
@@ -76,7 +85,15 @@ void DiskManager::destroy_dir(const std::string &path) {
 bool DiskManager::is_file(const std::string &path) {
     // Todo:
     // 用struct stat获取文件信息
-
+    struct stat buf;
+    int err = stat(path.c_str(), &buf);
+    if(err != 0) {
+        throw UnixError();
+    }
+    // common file
+    if(S_ISREG(buf.st_mode)) {
+        return true;
+    }
     return false;
 }
 
@@ -87,7 +104,10 @@ void DiskManager::create_file(const std::string &path) {
     // Todo:
     // 调用open()函数，使用O_CREAT模式
     // 注意不能重复创建相同文件
-
+    int err = open(path.c_str(), O_CREAT, 0666); // 0666: rw-rw-rw-
+    if(err == -1) {
+        throw UnixError();
+    }
 }
 
 /**
