@@ -88,6 +88,7 @@ TEST_F(DiskManagerTest, FileOperation) {
         }
         // 创建文件
         disk_manager_->create_file(filename);
+        // std::cout << filename << " " << disk_manager_->is_file(filename) << std::endl;
         EXPECT_EQ(disk_manager_->is_file(filename), true);  // 检查是否创建文件成功
         try {
             disk_manager_->create_file(filename);

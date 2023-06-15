@@ -15,7 +15,7 @@ add_subdirectory(recovery)
 # add_executable(rawcli rawcli.cpp)
 # target_link_libraries(rawcli parser execution pthread)
 
-# add_executable(rucbase rucbase.cpp)
-# target_link_libraries(rucbase parser execution readline pthread)
+add_executable(rucbase rucbase.cpp)
+target_link_libraries(rucbase parser execution readline pthread)
 
 # add_library(ownbase STATIC ownbase.cpp)
